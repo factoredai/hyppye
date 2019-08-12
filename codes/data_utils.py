@@ -26,8 +26,7 @@ def edge_list_build(db_path):
     
     print(artist_album_song_df.head(10))    
     print(50*"*")
-
-    # Parsing artists, albums and songs into ids in a dictionary.
+    
     dict_node_names = {}
    
     for id, node_name in enumerate(np.unique(artist_album_song_df.values.flatten())):        
@@ -36,7 +35,6 @@ def edge_list_build(db_path):
     print("Dictionary was created")
     print(50*"*")
 
-    # Mapping the dictionary of ids for each column of the dataset
     for col_name in artist_album_song_df.columns:
         artist_album_song_df[col_name] = artist_album_song_df[col_name].map(dict_node_names)
 
@@ -44,14 +42,12 @@ def edge_list_build(db_path):
     print("Mapping finished")
     print(50*"*")
 
-    # Creating edges list     
     unique_artist = artist_album_song_df.iloc[:, 0].unique()
     unique_artist_num = np.zeros_like(unique_artist)
         
     edge_list_df = pd.DataFrame({'node_father': unique_artist_num,
                                  'node_child': unique_artist})
 
-    # Open file connection to write:
     edge_list_out = open( './../data/processed/music.edges', 'w')
 
     for id in range(len(edge_list_df)):
