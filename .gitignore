@@ -105,3 +105,8 @@ venv.bak/
 
 # musicbrainz
 *musicbrainz/
+
+# data files
+*data/
+*.csv
+*.db
