@@ -5,10 +5,6 @@ import sys
 import gc
 import networkx as nx
 
-pd.set_option('display.max_rows', 500)
-pd.set_option('display.max_columns', 500)
-pd.set_option('display.width', 1000)
-
 
 def edge_list_build(db_path, out_path, write2disk=True):
     """
@@ -27,21 +23,12 @@ def edge_list_build(db_path, out_path, write2disk=True):
     start = time.time()
 
     df = pd.read_csv(db_path, sep='\t', header=None)
-        
-    print(df.head(10))
-    print(50*"*")
-    print(df.tail(10))        
-    print(50*"*")
-        
+                
     for col in range(1, len(df.columns)):
         df.iloc[:, col] = df.iloc[:, col-1] + '_' + df.iloc[:, col]
 
     n_divs = len(df.columns)-1
     
-    print(df.head(10))
-    print(50*"*")
-    print(df.tail(10))        
-    print(50*"*")
     
     dict_node_names = {}
    
@@ -118,44 +105,6 @@ def edge_list_build(db_path, out_path, write2disk=True):
         return tree_edge_list, hash_df
 
 
-
-    """
-    for col_name in df.columns:
-        df[col_name] = df[col_name].map(dict_node_names)
-
-    print(df.head(10))
-    print(df.tail(10))
-    print("Mapping finished")
-    print(50*"*")
-   
-    unique_artist = artist_album_song_df.iloc[:, 0].unique()
-    unique_artist_num = np.zeros_like(unique_artist)
-        
-    edge_list_df = pd.DataFrame({'node_father': unique_artist_num,
-                                 'node_child': unique_artist})
-
-  
-    edge_list_out = open( './../data/processed/music.edges', 'w')
-
-    for id in range(len(edge_list_df)):
-        edge_list_out.write(str(edge_list_df.iloc[id, 0]) + "\t" + str(edge_list_df.iloc[id, 1]) + "\n")
-
-    for col_id in range(0, len(artist_album_song_df.columns)-1 ):
-
-        father_child = artist_album_song_df.iloc[:,[col_id, col_id+1]].drop_duplicates().values        
-
-        for row_id in range( len(father_child) ):
-            edge_list_out.write( str(father_child[row_id, 0]) + "\t" +  str(father_child[row_id, 1])  + "\n")
-
-    edge_list_out.close()
-
-    end = time.time()
-    print("Total time spent", end - start)
-    """
-
-
-
 if __name__ == '__main__':
     edge_list_build(db_path='./../data/raw/music_info.txt',
                     out_path='./../data/processed/')
-
