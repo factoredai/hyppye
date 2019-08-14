@@ -6,7 +6,7 @@ import gc
 import networkx as nx
 
 
-def edge_list_build(db_path, out_path, write_to_disk=True):
+def edge_list_build(input_path, output_path, write_to_disk=True):
     """
     Function that reads the database and returns the edge list to be fed into 
     the embedding code. It creates a dictionary with unique values of parent 
@@ -26,7 +26,7 @@ def edge_list_build(db_path, out_path, write_to_disk=True):
 
     start_time = time.time()
 
-    df = pd.read_csv(db_path, sep='\t', header=None)
+    df = pd.read_csv(input_path, sep='\t', header=None)
                 
     for col in range(1, len(df.columns)):
         df.iloc[:, col] = df.iloc[:, col-1] + '_' + df.iloc[:, col]
@@ -89,13 +89,13 @@ def edge_list_build(db_path, out_path, write_to_disk=True):
     tree_edge_list = list(graph_bfs.edges)
     
     if write_to_disk:
-        f_out = open(out_path + 'music_info.edges', 'w')
+        f_out = open(output_path + 'music_info.edges', 'w')
         for t in tree_edge_list:
             line = ' '.join(str(x) for x in t)
             f_out.write(line + '\n')
         f_out.close()
         
-        hash_df.to_csv(out_path + 'hash_map.csv', index=False, sep='\t')
+        hash_df.to_csv(output_path + 'hash_map.csv', index=False, sep='\t')
 
         end_time = time.time()
         print("Total time spent in seconds:", end_time - start_time)
@@ -108,5 +108,5 @@ def edge_list_build(db_path, out_path, write_to_disk=True):
 
 
 if __name__ == '__main__':
-    edge_list_build(db_path='./../data/raw/music_info.txt',
-                    out_path='./../data/processed/')
+    edge_list_build(input_path='./../data/raw/music_info.txt',
+                    output_path='./../data/processed/')
