@@ -4,7 +4,7 @@ import networkx as nx
 
 sys.path.insert(0, "/home/jgutierrez/Lacuna/projects/hyperbolicEmbeddings_team4/hyp_embedding_dim")
 
-from graph_math import *
+from graph_utils import *
 
 #define parameters
 use_codes = True #use coding-theoretic children placement
@@ -38,3 +38,12 @@ if use_codes:
             h_col = digits(j, i)
             H[:, j-1] = h_col
         Gen_matrices.append(H.copy())
+
+if not use_codes or d_max > dim:
+    raise NotImplementedError("Requires implementation of place_children function")
+
+#place the children of the root
+if use_codes and d <= dim:
+    R = place_children_codes(dim, n_children=d, Gen_matrices=Gen_matrices)
+else:
+    raise NotImplementedError("Requires implementation of place_children function")

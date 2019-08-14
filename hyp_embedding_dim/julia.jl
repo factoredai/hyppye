@@ -5,7 +5,8 @@ py"""import sys
 sys.path.insert(0, "/home/jgutierrez/Lacuna/projects/hyperbolicEmbeddings_team4/hyp_embedding_dim")
 """
 #import local directory script functions
-hyp_to_euc_dist = pyimport("graph_math").hyp_to_euc_dist
+hyp_to_euc_dist = pyimport("graph_utils").hyp_to_euc_dist
+place_children_codes = pyimport("graph_utils").place_children_codes
 
 #import python packages
 @pyimport networkx as nx
@@ -44,21 +45,45 @@ if use_codes
     end
 end
 
-println(Gen_matrices[3, :])
+if !use_codes || d_max > dim
+    print('Forbidden!')
 
-if !use_codes || d_max > dim:
-    raise NotImplementedError('')
+function place_children_codes_(dim, c, Gen_matrices)
+    r = Int(ceil(log2(c)))
+    n = 2^r-1
+
+    G = Gen_matrices[r]
+
+    # generate the codewords using our matrix
+    C = zeros(BigFloat, c, dim)
+    for i=0:c-1
+        # codeword generated from matrix G:
+        cw = (digits(i,base=2,pad=r)'*G).%(2)
+
+        rep = Int(floor(dim/n))
+        for j=1:rep
+            # repeat it as many times as we can
+            C[i+1,(j-1)*n+1:j*n] = big.(cw');
+        end
+        rm = dim-rep*n
+        if rm > 0
+            C[i+1,rep*n+1:dim] = big.(cw[1:rm]')
+        end
+    end
+
+    # inscribe the unit hypercube vertices into unit hypersphere
+    points = (big(1)/sqrt(dim)*(-1).^C)'
+
+    return points
+end
+
+if use_codes && d <= dim
+    R = place_children_codes_(dim, d, Gen_matrices)
+end
+
+R
 
 """
-
-
-
-
-
-    if  !use_codes || d_max > dim
-        SB_points = 1000
-        SB        = place_children(dim, SB_points, false, 0, false, 0)
-    end
 
 
     # place the children of the root:
