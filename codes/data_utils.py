@@ -6,37 +6,40 @@ import gc
 import networkx as nx
 
 
-def edge_list_build(db_path, out_path, write2disk=True):
+def edge_list_build(db_path, out_path, write_to_disk=True):
     """
     Function that reads the database and returns the edge list to be fed into 
-    the embedding code. It creates a dictionary with unique values of 
-    artists, album and song and maps it into the input dataframe.
+    the embedding code. It creates a dictionary with unique values of parent 
+    and parent-children relationships as a hash maps and maps this relation 
+    into the input dataframe.
+
     Finally, saves in output file relationship between father (leftmost column) 
     and children (rightmost column)
     
-    Input: path of csv file with structure: artist, album, song
+    Input: path of csv file where each register corresponds to a 
+    parent-children relationship in the graph
 
-    Output: Written file on ../data/processed directory containing edges list 
-            of tree
+    Output: Returns to memory of write two files: first return/file 
+    corresponds to edge list in the tree; second return/file corresponds to  
+    hash map.
     """
 
-    start = time.time()
+    start_time = time.time()
 
     df = pd.read_csv(db_path, sep='\t', header=None)
                 
     for col in range(1, len(df.columns)):
         df.iloc[:, col] = df.iloc[:, col-1] + '_' + df.iloc[:, col]
 
-    n_divs = len(df.columns)-1
+    n_divs = len(df.columns) - 1
     
     
     dict_node_names = {}
    
     for id, node_name in enumerate(np.unique(df.values.flatten())):        
-        dict_node_names[node_name] = id+1
+        dict_node_names[node_name] = id + 1
 
-    print("Dictionary size", len(dict_node_names))
-    print(100*'*')    
+    print("Dictionary size", len(dict_node_names))    
     print("Dictionary was created")
     print(50*"*")
     
@@ -61,9 +64,9 @@ def edge_list_build(db_path, out_path, write2disk=True):
 
     df_tuples = pd.DataFrame()
 
-    for i in range(len(df.columns)-1):
-        df_tuples[i] = list(df[df.columns[i:i+2]].itertuples(index=False,
-                                                             name=None))
+    for i in range(len(df.columns) - 1):
+        df_tuples[i] = list(df[df.columns[i:i + 2]].itertuples(index=False,
+                                                               name=None))
     
     del df
     gc.collect()
@@ -78,15 +81,14 @@ def edge_list_build(db_path, out_path, write2disk=True):
         father_child = df_tuples.iloc[:, col_id].drop_duplicates().values
         nodes_list.extend(father_child)
 
-    print(len(nodes_list))
-    print(nodes_list[:5])
+    print("Size of nodes list", len(nodes_list))    
 
     graph = nx.DiGraph(nodes_list)
     graph_bfs = nx.bfs_tree(graph, 0)
 
     tree_edge_list = list(graph_bfs.edges)
     
-    if write2disk:
+    if write_to_disk:
         f_out = open(out_path + 'music_info.edges', 'w')
         for t in tree_edge_list:
             line = ' '.join(str(x) for x in t)
@@ -95,13 +97,13 @@ def edge_list_build(db_path, out_path, write2disk=True):
         
         hash_df.to_csv(out_path + 'hash_map.csv', index=False, sep='\t')
 
-        end = time.time()
-        print("Total time spent in seconds:", end - start)
+        end_time = time.time()
+        print("Total time spent in seconds:", end_time - start_time)
 
         return
     else:
-        end = time.time()
-        print("Total time spent in seconds:", end - start)
+        end_time = time.time()
+        print("Total time spent in seconds:", end_time - start_time)
         return tree_edge_list, hash_df
 
 
