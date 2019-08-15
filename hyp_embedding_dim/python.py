@@ -51,7 +51,9 @@ else:
 R = R.T
 
 for i in range(d):
-    R[i, :] *= edge_lengths[i] #embeddings of the children
+    print(type(R[i, :]))
+    print(type(edge_lengths[i, 0]))
+    R[i, :] *= edge_lengths[i, 0] #embeddings of the children
     T[root_children[i], :] = R[i, :].copy() #adding these embeddings to the global embedding matrix
 
 # queue containing the nodes whose children we're placing
@@ -62,7 +64,7 @@ node_idx = 0
 while len(q) > 0:
     h = q[0]
     node_idx += 1
-    if node idx % 100 == 0:
+    if node_idx % 100 == 0:
         print("Placing children of node {}".format(node_idx))
     children = list(G_BFS.successors(h))
     parent = list(G_BFS.predecessors(h))
@@ -83,3 +85,19 @@ while len(q) > 0:
             T[children[i], :] = R[i, :]
 
 print(T)
+
+"""
+  0.0         0.0         0.0        …   0.0         0.0         0.0
+  0.0462117   0.0462117   0.0462117      0.0462117   0.0462117   0.0462117
+ -0.0462117   0.0462117  -0.0462117      0.0462117  -0.0462117  -0.0462117
+  0.0462117  -0.0462117  -0.0462117     -0.0462117  -0.0462117   0.0462117
+  0.0761594   0.0761594   0.0761594      0.0761594   0.0761594   0.0761594
+ -0.0761594   0.0761594  -0.0761594  …   0.0761594  -0.0761594  -0.0761594
+  0.0832486  -0.0222098  -0.0832486     -0.0222098  -0.0832486   0.0832486
+  0.0220364  -0.0835162  -0.0835162     -0.0835162  -0.0835162   0.0220364
+  0.0905148   0.0905148   0.0905148      0.0905148   0.0905148   0.0905148
+ -0.0905148   0.0905148  -0.0905148      0.0905148  -0.0905148  -0.0905148
+  0.105613   -0.0177377  -0.105613   …  -0.0177377  -0.105613    0.105613
+  0.0346843  -0.0824122  -0.116316      -0.0824122  -0.116316    0.0346843
+ -0.0156322  -0.0947904  -0.0947904     -0.0947904  -0.0947904  -0.0156322
+"""
