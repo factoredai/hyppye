@@ -25,7 +25,46 @@ def max_degree(G):
 
     return [max_node, max_d]
 
-def place_children_codes(dim, n_children, Gen_matrices):
+#  algorithm to place a set of points uniformly on the n-dimensional unit sphere
+#  see: http://www02.smt.ufrj.br/~eduardo/papers/ri15.pdf
+#  the idea is to try to tile the surface of the sphere with hypercubes
+#  works well for larger numbers of points
+#  what we'll actually do is to build it once with a large number of points
+#  and then sample for this set of points
+def place_children(dim, c, use_sp, sp, sample_from, sb):
+    raise NotImplementedError()
+
+# rotate the set of points so that the first vector
+# coincides with the starting point sp
+# N = dimension, K = # of points
+def rotate_points(points, sp, N, K):
+    pts = np.zeros((N, K), dtype=np.float128)
+    x = points[:, 0].astype(np.float128)
+    y = sp.copy().astype(np.float128)
+
+    # rotate x to y
+    u = (x / np.linalg.norm(x).astype(np.float128))
+    v = y - np.dot(np.dot(u.T, y), u)
+    v = v / np.linalg.norm(v)
+    cost = np.dot(x.T, y)/(np.linalg.norm(x) * np.linalg.norm(y))
+
+    #no rotation needed
+    if np.float128(1.0) - cost**2 <= np.float128(0.0):
+        return points
+
+    sint = np.sqrt(np.float128(1.0) - cost**2)
+
+    M = np.array([[cost, -sint], [sint, cost]], dtype=np.float128)
+    S = np.vstack([u, v])
+    R = I - np.dot(u, u.T) - np.dot(v, v.T) + (S.T).dot(M).dot(S)
+
+    for i in range(K):
+        pts[:, i] = R * points[:, i]
+
+    return pts
+
+
+def place_children_codes(dim, n_children, use_sp, sp, Gen_matrices):
     r = int(np.ceil(np.log2(n_children)))
     n = 2**r - 1
 
@@ -48,4 +87,45 @@ def place_children_codes(dim, n_children, Gen_matrices):
 
     # inscribe the unit hypercube vertices into unit hypersphere
     points = (np.float128(1)/np.sqrt(dim)*(-1)**C).T
+
+    # rotate to match the parent, if we need to
+    if use_sp:
+        points = rotate_points(points, sp, dim, c)
+
     return points
+
+# Reflection (circle inversion of x through orthogonal circle centered at a)
+def isometric_transform(a, x):
+    r2 = np.linalg.norm(a)**2 - np.float128(1.0)
+    return r2/np.linalg.norm(x - a)**2 * (x - a) + a
+
+# Inversion taking mu to origin
+def reflect_at_zero(mu, x):
+    a = mu/np.linalg.norm(mu)**2
+    return isometric_transform(a, x)
+
+# place children. just performs the inversion and then uses the uniform
+# unit sphere function to actually get the locations
+def add_children_dim(p, x, dim, edge_lengths, use_codes, SB, Gen_matrices):
+    p0, x0  = reflect_at_zero(x, p), reflect_at_zero(x, x)
+    c = len(edge_lengths)
+    q = np.linalg.norm(p0)
+
+    assert norm(p0) <= 1.0
+
+    # a single child is a special case, place opposite the parent:
+    if c == 1:
+        points0 = np.zeros((2, dim), dtype=np.float128)
+        points0[1, :] = np.float128(1.0)*p0/np.linalg.norm(p0)
+    else:
+        if use_codes:
+            points0 = place_children_codes(dim, c + 1, True, p0/np.linalg.norm(p0), Gen_matrices)
+        else:
+            points0 = place_children(dim, c + 1, True, p0/np.linalg.norm(p0), True, SB)
+        points0 = points0.T
+
+    points0[0, :] = p
+    for i in range(1, c + 1):
+        points0[i, :] = reflect_at_zero(x, edge_lengths[i-1] * points0[i, :])
+
+    return points0[2:, :]

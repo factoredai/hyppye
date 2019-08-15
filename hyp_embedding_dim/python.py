@@ -44,6 +44,42 @@ if not use_codes or d_max > dim:
 
 #place the children of the root
 if use_codes and d <= dim:
-    R = place_children_codes(dim, n_children=d, Gen_matrices=Gen_matrices)
+    R = place_children_codes(dim, n_children=d, use_sp=False, sp=0, Gen_matrices=Gen_matrices)
 else:
     raise NotImplementedError("Requires implementation of place_children function")
+
+R = R.T
+
+for i in range(d):
+    R[i, :] *= edge_lengths[i] #embeddings of the children
+    T[root_children[i], :] = R[i, :].copy() #adding these embeddings to the global embedding matrix
+
+# queue containing the nodes whose children we're placing
+q = []
+q.extend(root_children)
+node_idx = 0
+
+while len(q) > 0:
+    h = q[0]
+    node_idx += 1
+    if node idx % 100 == 0:
+        print("Placing children of node {}".format(node_idx))
+    children = list(G_BFS.successors(h))
+    parent = list(G_BFS.predecessors(h))
+    num_children = len(children)
+    edge_lengths = hyp_to_euc_dist(tau * np.ones((num_children, 1)))
+    q.extend(children)
+
+    if weighted:
+        raise NotImplementedError("Weighted graphs not implemented yet.")
+
+    if num_children > 0:
+        if use_codes and num_children + 1 <= dim:
+            R = add_children_dim(T[parent[0], :], T[h, :], dim, edge_lengths, True, 0, Gen_matrices)
+        else:
+            R = add_children_dim(T[parent[0], :], T[h, :], dim, edge_lengths, False, SB, 0)
+
+        for i in range(num_children):
+            T[children[i], :] = R[i, :]
+
+print(T)
