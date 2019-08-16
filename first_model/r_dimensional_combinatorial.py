@@ -203,9 +203,9 @@ if args.stats:
 
 
 
-    for i in 1:n
+    for i in range(len(sample_nodes)):
             # the real distances in the graph
-            true_dist_row = vec(csg.dijkstra(adj_mat_original, indices=[sample_nodes[i]-1], unweighted=(!weighted), directed=false))
+            true_dist_row = np.array(csg.dijkstra(adj_mat_original, indices=[sample_nodes[i]-1], unweighted=(!weighted), directed=false))
 
             # the hyperbolic distances for the points we've embedded
             hyp_dist_row = convert(Array{Float64},vec(dist_matrix_row(T, sample_nodes[i])/tau))
@@ -216,16 +216,16 @@ if args.stats:
             _maps[i]  = curr_map
 
             # print out current and running average MAP
-            if parsed_args["verbose"]
-                println("Row $(sample_nodes[i]), current MAP = $(curr_map)")
-            end
+            if args.verbose:
+                print("Row {}, current MAP = {}".format(sample_nodes[i],curr_map))
+
 
             # these are distortions: worst cases (contraction, expansion) and average
-            mc, me, avg, bad = dis.distortion_row(true_dist_row, hyp_dist_row[1:n] ,n,sample_nodes[i]-1)
+            mc, me, avg, bad = distortion_row(true_dist_row, hyp_dist_row[:n] ,n,sample_nodes[i]-1)
             _wcs[i]  = mc*me
 
             _d_avgs[i] = avg
-        end
+
         # Clean up
         maps  = sum(_maps)
         d_avg = sum(_d_avgs)

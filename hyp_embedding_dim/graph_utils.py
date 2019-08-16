@@ -63,6 +63,7 @@ def rotate_points(points, sp, N, K):
 
     for i in range(K):
         pts[:, i] = np.dot(R,points[:, i])
+    return pts
 
 
 def place_children_codes(dim, n_children, use_sp, sp, Gen_matrices):

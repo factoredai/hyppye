@@ -85,3 +85,14 @@ def max_degree(G):
             max_node = deg[0]
 
     return [max_node, max_d]
+
+
+def distortion_row(H1, H2, n, row):
+    mc, me, avg, good = 0,0,0,0
+    for i in range(n):
+        if i != row and entry_is_good(H1[i], H2[i]):
+            (_avg,me,mc) = distortion_entry(H1[i], H2[i],me,mc)
+            good        += 1
+            avg         += _avg
+    avg /= good if good > 0 else 1.0
+    return (mc, me, avg, n-1-good)
