@@ -59,13 +59,15 @@ def rotate_points(points, sp, N, K):
         return points
 
     sint = mp.sqrt(1.0 - cost**2)
+    u = u.reshape((-1, 1))
+    v = v.reshape((-1, 1))
 
     M = np.array([[cost, -sint], [sint, cost]])
     S = np.vstack([u, v])
     R = np.eye(len(x)) - np.dot(u, u.T) - np.dot(v, v.T) + (S.T).dot(M).dot(S)
 
     for i in range(K):
-        pts[:, i] = np.dot(R,points[:, i])
+        pts[:, i] = np.dot(R, points[:, i])
     return pts
 
 
