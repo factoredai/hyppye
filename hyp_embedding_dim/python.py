@@ -11,15 +11,14 @@ use_codes = True #use coding-theoretic children placement
 tau = 1.0
 root = 0
 weighted = False
-dim = 100
-d_max = 30 #maximum degree of graph
-G = nx.DiGraph([(0,1),(0,2),(0,3),
-                (1,4),(2,5),(3,6),(3,7),
-                (4,8),(5,9),(6,10),(7,11),(7,12)])#NetworkX Digraph
+dim = 3
+d_max = 3 #maximum degree of graph
+G = nx.DiGraph([(0,1),(0,2),(0,3),(2,4),(3,5),(5,6),(5,7)]) #NetworkX Digraph
 G_BFS = nx.bfs_tree(G, 0)
 
 n = G_BFS.order() #returns the number of nodes in the graph
-T = np.zeros((n, dim)) #initialize embeddings as zero
+mp.prec = 256
+T = np.array([mp.mpf(0) for i in range(n * dim)]).reshape((n, dim))
 root_children = list(G_BFS.successors(root)) #get children of the root
 d = len(root_children) #get number of children of root
 edge_lengths = hyp_to_euc_dist(tau * np.ones((d, 1)))
@@ -51,8 +50,6 @@ else:
 R = R.T
 
 for i in range(d):
-    print(type(R[i, :]))
-    print(type(edge_lengths[i, 0]))
     R[i, :] *= edge_lengths[i, 0] #embeddings of the children
     T[root_children[i], :] = R[i, :].copy() #adding these embeddings to the global embedding matrix
 
@@ -62,42 +59,38 @@ q.extend(root_children)
 node_idx = 0
 
 while len(q) > 0:
-    h = q[0]
+    h = q.pop(0)
+    print('Popped node', h)
     node_idx += 1
     if node_idx % 100 == 0:
         print("Placing children of node {}".format(node_idx))
     children = list(G_BFS.successors(h))
     parent = list(G_BFS.predecessors(h))
     num_children = len(children)
-    edge_lengths = hyp_to_euc_dist(tau * np.ones((num_children, 1)))
-    q.extend(children)
+    print('N children:', num_children)
 
     if weighted:
         raise NotImplementedError("Weighted graphs not implemented yet.")
 
     if num_children > 0:
+        edge_lengths = hyp_to_euc_dist(tau * np.ones((num_children, 1)))
+        print('Adding children to queue:', children)
+        q.extend(children)
+
         if use_codes and num_children + 1 <= dim:
+            #print('Embedding children using codes')
+            #print('p:', T[parent[0], :])
+            #print('x:', T[h, :])
+            #print('edge lengths', edge_lengths)
             R = add_children_dim(T[parent[0], :], T[h, :], dim, edge_lengths, True, 0, Gen_matrices)
         else:
+            #print('Embedding children without codes')
+            #print('p:', T[parent[0], :])
+            #print('x:', T[h, :])
+            #print('edge lengths', edge_lengths)
             R = add_children_dim(T[parent[0], :], T[h, :], dim, edge_lengths, False, SB, 0)
 
         for i in range(num_children):
+            print('Embedding for children', children[i])
+            print(R[i, :])
             T[children[i], :] = R[i, :]
-
-print(T)
-
-"""
-  0.0         0.0         0.0        …   0.0         0.0         0.0
-  0.0462117   0.0462117   0.0462117      0.0462117   0.0462117   0.0462117
- -0.0462117   0.0462117  -0.0462117      0.0462117  -0.0462117  -0.0462117
-  0.0462117  -0.0462117  -0.0462117     -0.0462117  -0.0462117   0.0462117
-  0.0761594   0.0761594   0.0761594      0.0761594   0.0761594   0.0761594
- -0.0761594   0.0761594  -0.0761594  …   0.0761594  -0.0761594  -0.0761594
-  0.0832486  -0.0222098  -0.0832486     -0.0222098  -0.0832486   0.0832486
-  0.0220364  -0.0835162  -0.0835162     -0.0835162  -0.0835162   0.0220364
-  0.0905148   0.0905148   0.0905148      0.0905148   0.0905148   0.0905148
- -0.0905148   0.0905148  -0.0905148      0.0905148  -0.0905148  -0.0905148
-  0.105613   -0.0177377  -0.105613   …  -0.0177377  -0.105613    0.105613
-  0.0346843  -0.0824122  -0.116316      -0.0824122  -0.116316    0.0346843
- -0.0156322  -0.0947904  -0.0947904     -0.0947904  -0.0947904  -0.0156322
-"""
