@@ -42,6 +42,7 @@ def place_children(dim, c, use_sp, sp, sample_from, sb):
 # N = dimension, K = # of points
 def rotate_points(points, sp, N, K):
     pts = np.zeros((N, K))
+
     x = points[:, 0]
     y = sp.copy()
 
@@ -93,14 +94,14 @@ def place_children_codes(dim, n_children, use_sp, sp, Gen_matrices):
 
     # rotate to match the parent, if we need to
     if use_sp:
-        points = rotate_points(points, sp, dim, c)
+        points = rotate_points(points, sp, dim, n_children)
 
     return points
 
 # Reflection (circle inversion of x through orthogonal circle centered at a)
 def isometric_transform(a, x):
-    r2 = np.linalg.norm(a)**2 - np.float128(1.0)
-    return r2/np.linalg.norm(x - a)**2 * (x - a) + a
+    r2 = np.linalg.norm(a)**2 - 1.0
+    return (r2/np.linalg.norm(x - a)**2) * (x - a) + a
 
 # Inversion taking mu to origin
 def reflect_at_zero(mu, x):
@@ -114,10 +115,8 @@ def add_children_dim(p, x, dim, edge_lengths, use_codes, SB, Gen_matrices):
     c = len(edge_lengths)
     q = np.linalg.norm(p0)
 
-    assert norm(p0) <= 1.0
-
     # a single child is a special case, place opposite the parent:
-    #np.float128(1.0)??????????????????
+    # np.float128(1.0)??????????????????
     if c == 1:
         points0 = np.zeros((2, dim))
         points0[1, :] = p0/np.linalg.norm(p0)
@@ -132,4 +131,4 @@ def add_children_dim(p, x, dim, edge_lengths, use_codes, SB, Gen_matrices):
     for i in range(1, c + 1):
         points0[i, :] = reflect_at_zero(x, edge_lengths[i-1, 0] * points0[i, :])
 
-    return points0[2:, :]
+    return points0[1:, :]
