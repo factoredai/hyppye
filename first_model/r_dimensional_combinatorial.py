@@ -6,6 +6,7 @@ from load_graph import is_weighted
 import networkx as nx
 from mpmath import mp
 import time
+import pandas as pd
 #import graph_util as gu
 
 parser = argparse.ArgumentParser(description='parameters for the embeddings')
@@ -32,8 +33,11 @@ parser.add_argument('-c','--code_thoery', action='store_true',
                     help= 'Use coding-theoretic child placement')
 
 
-parser.add_argument('--s',  action='store_true',
+parser.add_argument('-s', '--stats',  action='store_true',
                     help= 'Get statistics')
+
+parser.add_argument('-ss', '--stats_sample', metavar = 'sample for computing evaluation metrics',
+                    type=int,help= 'Get statistics')
 
 
 parser.add_argument('--y', action='store_true',
@@ -124,9 +128,9 @@ else:
     #TODO do not allow this tau make an assertion tat ensures the user pick
     #oneof the options.
     tau = 1.0
-print(tau)
+
 # Print out the scaling factor we got
-print("Scaling factor tau = ", float(tau))
+print("Scaling factor tau = ", tau)
 
 use_codes = False
 if args.code_thoery:
@@ -159,6 +163,81 @@ end = time.time()
 
 
 print( end - start)
+
+
+# Save the embedding:
+if args.save_embedding != None:
+    # TODO shoul we store the embedding with a higuer presicion?????
+    df = pd.DataFrame(T.astype('float64'))
+    # save tau also:
+    df["tau"] = float(tau)
+    pd.to_csv(df, args.save_embedding)
+
+
+
+
+
+
+#####------------------Evaluation------------------------####
+# TODO evaluation module
+if args.stats:
+    include(pwd() * "/combinatorial/distances.jl")
+    print("\nComputing quality statistics")
+    # The rest is statistics: MAP, distortion
+    maps = 0;
+    wc = 1;
+    d_avg = 0;
+
+    # In case we want to sample the rows of the matrix:
+    if args.stats_sample != None:
+        samples = min(parsed_args.stats_sample, n_bfs)
+        print("Using {} sample rows for statistics".format(samples))
+    else:
+        samples = n_bfs
+
+    sample_nodes = randperm(n_bfs)[1:samples]
+
+    _maps   = zeros(samples)
+    _d_avgs = zeros(samples)
+    _wcs    = zeros(samples)
+
+
+
+    for i in 1:n
+            # the real distances in the graph
+            true_dist_row = vec(csg.dijkstra(adj_mat_original, indices=[sample_nodes[i]-1], unweighted=(!weighted), directed=false))
+
+            # the hyperbolic distances for the points we've embedded
+            hyp_dist_row = convert(Array{Float64},vec(dist_matrix_row(T, sample_nodes[i])/tau))
+
+            # this is this row MAP
+            # TODO: n=n_bfs for the way we're currently loading data, but be careful in future
+            curr_map  = dis.map_row(true_dist_row, hyp_dist_row[1:n], n, sample_nodes[i]-1)
+            _maps[i]  = curr_map
+
+            # print out current and running average MAP
+            if parsed_args["verbose"]
+                println("Row $(sample_nodes[i]), current MAP = $(curr_map)")
+            end
+
+            # these are distortions: worst cases (contraction, expansion) and average
+            mc, me, avg, bad = dis.distortion_row(true_dist_row, hyp_dist_row[1:n] ,n,sample_nodes[i]-1)
+            _wcs[i]  = mc*me
+
+            _d_avgs[i] = avg
+        end
+        # Clean up
+        maps  = sum(_maps)
+        d_avg = sum(_d_avgs)
+        wc    = maximum(_wcs)
+
+        if weighted:
+            print("Note: MAP is not well defined for weighted graphs")
+
+        # Final stats:
+        print("Final MAP = {}".format(maps/samples))
+        print("Final d_avg = {}, d_wc = {}".format(d_avg/samples,wc))
+
 
 
 #if __name__ == "__main__":

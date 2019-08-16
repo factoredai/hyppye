@@ -41,30 +41,28 @@ def place_children(dim, c, use_sp, sp, sample_from, sb):
 # coincides with the starting point sp
 # N = dimension, K = # of points
 def rotate_points(points, sp, N, K):
-    pts = np.zeros((N, K), dtype=np.float128)
-    x = points[:, 0].astype(np.float128)
-    y = sp.copy().astype(np.float128)
+    pts = np.zeros((N, K))
+    x = points[:, 0]
+    y = sp.copy()
 
     # rotate x to y
-    u = (x / np.linalg.norm(x).astype(np.float128))
+    u = (x / np.linalg.norm(x))
     v = y - np.dot(np.dot(u.T, y), u)
     v = v / np.linalg.norm(v)
     cost = np.dot(x.T, y)/(np.linalg.norm(x) * np.linalg.norm(y))
 
     #no rotation needed
-    if np.float128(1.0) - cost**2 <= np.float128(0.0):
+    if 1.0 - cost**2 <= 0.0:
         return points
 
-    sint = np.sqrt(np.float128(1.0) - cost**2)
+    sint = mp.sqrt(1.0 - cost**2)
 
-    M = np.array([[cost, -sint], [sint, cost]], dtype=np.float128)
+    M = np.array([[cost, -sint], [sint, cost]])
     S = np.vstack([u, v])
-    R = I - np.dot(u, u.T) - np.dot(v, v.T) + (S.T).dot(M).dot(S)
+    R = np.eye(len(x)) - np.dot(u, u.T) - np.dot(v, v.T) + (S.T).dot(M).dot(S)
 
     for i in range(K):
-        pts[:, i] = R * points[:, i]
-
-    return pts
+        pts[:, i] = np.dot(R,points[:, i])
 
 
 def place_children_codes(dim, n_children, use_sp, sp, Gen_matrices):
@@ -90,13 +88,12 @@ def place_children_codes(dim, n_children, use_sp, sp, Gen_matrices):
             C[[i], rep*n:dim] = cw[0, :rm].T
 
     # inscribe the unit hypercube vertices into unit hypersphere
-    points = (np.float128(1)/np.sqrt(dim)*(-1)**C).T
+    points = (1/mp.sqrt(dim)*(-1)**C).T
 
     # rotate to match the parent, if we need to
     if use_sp:
         points = rotate_points(points, sp, dim, c)
 
-    points = (1/np.sqrt(dim)*(-1)**C).T
     return points
 
 # Reflection (circle inversion of x through orthogonal circle centered at a)
@@ -119,9 +116,10 @@ def add_children_dim(p, x, dim, edge_lengths, use_codes, SB, Gen_matrices):
     assert norm(p0) <= 1.0
 
     # a single child is a special case, place opposite the parent:
+    #np.float128(1.0)??????????????????
     if c == 1:
-        points0 = np.zeros((2, dim), dtype=np.float128)
-        points0[1, :] = np.float128(1.0)*p0/np.linalg.norm(p0)
+        points0 = np.zeros((2, dim))
+        points0[1, :] = p0/np.linalg.norm(p0)
     else:
         if use_codes:
             points0 = place_children_codes(dim, c + 1, True, p0/np.linalg.norm(p0), Gen_matrices)

@@ -19,7 +19,7 @@ G = nx.DiGraph([(0,1),(0,2),(0,3),
 G_BFS = nx.bfs_tree(G, 0)
 
 n = G_BFS.order() #returns the number of nodes in the graph
-T = np.zeros((n, dim), dtype=np.float128) #initialize embeddings as zero
+T = np.zeros((n, dim)) #initialize embeddings as zero
 root_children = list(G_BFS.successors(root)) #get children of the root
 d = len(root_children) #get number of children of root
 edge_lengths = hyp_to_euc_dist(tau * np.ones((d, 1)))
