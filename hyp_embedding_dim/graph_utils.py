@@ -41,7 +41,9 @@ def place_children(dim, c, use_sp, sp, sample_from, sb):
 # coincides with the starting point sp
 # N = dimension, K = # of points
 def rotate_points(points, sp, N, K):
-    pts = np.zeros((N, K))
+    pts = [mp.mpf(0) for i in range(N*K)]
+    pts = np.array(pts)
+    pts = pts.reshape((N, K))
 
     x = points[:, 0]
     y = sp.copy()
@@ -118,7 +120,8 @@ def add_children_dim(p, x, dim, edge_lengths, use_codes, SB, Gen_matrices):
     # a single child is a special case, place opposite the parent:
     # np.float128(1.0)??????????????????
     if c == 1:
-        points0 = np.zeros((2, dim))
+        points0 = np.array([mp.mpf(0) for i in range(2*dim)])
+        points0 = np.reshape(points0, (2, dim))
         points0[1, :] = p0/np.linalg.norm(p0)
     else:
         if use_codes:
