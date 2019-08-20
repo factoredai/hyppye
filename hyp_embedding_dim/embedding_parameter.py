@@ -1,3 +1,7 @@
+import numpy as np 
+import mpmath as mp 
+from load_graph import max_degree
+
 #######
 #This function computes the tau for a required precision i.e:
 #if you want a WC_distortion of at most 1 + epsilon this function
@@ -20,7 +24,7 @@ def get_emb_par(G, k, eps, weighted):
 
     beta    = mp.pi/(1.2*d_max)
     v       = -2*k*mp.log(mp.tan(beta/2))
-    m       = length(G.edges())
+    m       = len(G.edges())
 
 
     if weighted:
@@ -35,7 +39,7 @@ def get_emb_par(G, k, eps, weighted):
     else:
         w = 1
 
-    _, d_max     = gu.max_degree(G)
+    _, d_max     = max_degree(G)
     alpha        = 2*mp.pi/(d_max)-2*beta
     _len_        = -2*k*mp.log(mp.tan(alpha/2))
     nu           = _len_/w if (_len_/w > nu) else nu

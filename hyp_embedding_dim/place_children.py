@@ -1,10 +1,28 @@
 import numpy as np
 from mpmath import mp
-#import graph_utils as gu
 from place_children_codes import rotate_points
 
 
 def place_children(dim, c, use_sp, sp, sample_from, sb, precision):
+    """
+    Algorithm to place a set of points uniformly on the n-dimensional unit
+    sphere. The idea is to try to tile the surface of the sphere with 
+    hypercubes. What was done was to build it once with a large number of 
+    points and then sample for this set of points.
+
+    Input:
+        * dim: Integer. Embedding dimensions
+        * c: Integer. Number of children
+        * use_sp: Boolean. Condition to rotate points or not.
+        * sp: 
+        * sample_from: Boolean. Condition to sample from sb
+        * sb: array of coordinates in the embedding
+        * precision: precision used in mpmath library
+
+    Output:
+        * points: array of coordinates on the hypershpere for each child node        
+    """
+    
     mp.prec = precision
     N = dim
     K = c
@@ -33,12 +51,9 @@ def place_children(dim, c, use_sp, sp, sample_from, sb, precision):
             AN = N*(2**N) * mp.power(mp.mpf(np.pi), (N - 1) / 2) * mp.mpf(mp.fac((N - 1) // 2) / (mp.fac(N)))            
         else:
             AN = N * mp.power(mp.mpf(np.pi), mp.mpf(N / 2)) / (mp.fac((N // 2)) ) 
-            
-        # approximate edge length for N-1 dimensional hypercube
+                    
         delta = mp.power(mp.mpf(AN/K), ( mp.mpf(1 / (N - 1)) ))
-        
-        # k isn't exact, so we have to iteratively change delta until we get
-        #  the k we actually want
+                
         true_k = 0
         while true_k < K:
             points, true_k = place_on_sphere(delta, N, K, False, precision)
@@ -53,6 +68,21 @@ def place_children(dim, c, use_sp, sp, sample_from, sb, precision):
 
 
 def place_on_sphere(delta, N, K, actually_place, precision=100):
+    """
+    Iterative procedure to get a set of points nearly uniformly on
+    the unit hypersphere.
+    Input:
+        * delta: Float. approximate edge length for N-1 dimensional hypercube
+        * N: Integer. Embedding dimension
+        * K: Integer. Number or children.
+        * actually_place: Boolean. Condition to generate coordinates from 
+                          angles
+        * precision: precision used in mpmath library
+
+    Output:
+        * points: array of coordinates on the hypershpere for each child node
+        * true_k: number of children nodes
+    """
     mp.prec = precision
     mp_sin = np.vectorize(mp.sin)
 
@@ -97,7 +127,7 @@ def place_on_sphere(delta, N, K, actually_place, precision=100):
                 # generate point from spherical coordinates
                 if actually_place:
                     point = coord_from_angle(curr_angle, N, precision)
-                    points[:,points_idx] = point.flatten()
+                    points[:, points_idx] = point.flatten()
 
                 points_idx = points_idx+1
             else:
@@ -107,8 +137,17 @@ def place_on_sphere(delta, N, K, actually_place, precision=100):
     return [points, true_k]
 
 
-# spherical coodinates: get Euclidean coord. from a set of points
 def coord_from_angle(ang, N, precision=100):
+    """
+    Spherical coodinates: get Euclidean coord. from a set of points
+
+    Input:
+        * ang: angles in spherical coordinates
+        * N: Integer. Embedding dimension
+
+    Output:
+        * point: Array with euclidean coordinates.
+    """    
     mp.prec = precision
     mp_cos = np.vectorize(mp.cos)
     mp_sin = np.vectorize(mp.sin)

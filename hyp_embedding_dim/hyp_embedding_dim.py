@@ -22,10 +22,9 @@ G = nx.DiGraph([(0,1),(0,2),(0,3),(2,4),(3,5),(5,6),(5,7)]) #NetworkX Digraph
 G_BFS = nx.bfs_tree(G, 0)
 """
 
-def hyp_embedding_dim(G_BFS, root, weighted, dim, tau, d_max, use_codes):
+def hyp_embedding_dim(G_BFS, root, weighted, dim, tau, d_max, use_codes, precision=100):
     n = G_BFS.order() #returns the number of nodes in the graph
-    mp.prec = 256
-    precision = mp.prec
+    mp.prec = precision
     T = np.array([mp.mpf(0) for i in range(n * dim)]).reshape((n, dim))
     root_children = list(G_BFS.successors(root)) #get children of the root
     d = len(root_children) #get number of children of root
@@ -71,21 +70,21 @@ def hyp_embedding_dim(G_BFS, root, weighted, dim, tau, d_max, use_codes):
 
     while len(q) > 0:
         h = q.pop(0)
-        print('Popped node', h)
+        #print('Popped node', h)
         node_idx += 1
         if node_idx % 100 == 0:
             print("Placing children of node {}".format(node_idx))
         children = list(G_BFS.successors(h))
         parent = list(G_BFS.predecessors(h))
         num_children = len(children)
-        print('N children:', num_children)
+        #print('N children:', num_children)
 
         if weighted:
             raise NotImplementedError("Weighted graphs not implemented yet.")
 
         if num_children > 0:
             edge_lengths = hyp_to_euc_dist(tau * np.ones((num_children, 1)))
-            print('Adding children to queue:', children)
+            #print('Adding children to queue:', children)
             q.extend(children)
 
             if use_codes and num_children + 1 <= dim:
@@ -102,8 +101,8 @@ def hyp_embedding_dim(G_BFS, root, weighted, dim, tau, d_max, use_codes):
                 R = add_children_dim(T[parent[0], :], T[h, :], dim, edge_lengths, False, SB, 0, precision=precision)
 
             for i in range(num_children):
-                print('Embedding for children', children[i])
-                print(R[i, :])
+                #print('Embedding for children', children[i])
+                #print(R[i, :])
                 T[children[i], :] = R[i, :]
     return T
 
