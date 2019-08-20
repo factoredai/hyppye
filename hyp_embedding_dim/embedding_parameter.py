@@ -1,19 +1,20 @@
-import numpy as np 
-import mpmath as mp 
+import numpy as np
+import mpmath as mp
 from load_graph import max_degree
 
 #######
-#This function computes the tau for a required precision i.e:
-#if you want a WC_distortion of at most 1 + epsilon this function
-# computes the appropiate scaling fcator tau
+
 
 def get_emb_par(G, k, eps, weighted):
     """
-    parameters:
-    @G: [netoworx object] a tree
-    @k: [int] ???????
-    @eps: [Float64] The epsilon that state the required precision
-    @weighted: [Boolean] If G is a weighted tree
+        This function computes the tau for a required precision i.e:
+        if you want a WC_distortion of at most 1 + epsilon this function
+        computes the appropiate scaling fcator tau
+        parameters:
+        @G: [netoworx object] a tree
+        @k: [int] ???????
+        @eps: [Float64] The epsilon that state the required precision
+        @weighted: [Boolean] If G is a weighted tree
     """
     n       = G.order()
     degrees = G.degree()
