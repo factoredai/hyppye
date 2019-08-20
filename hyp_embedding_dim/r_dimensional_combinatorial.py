@@ -76,6 +76,7 @@ if not args.save_embedding:
 else:
     print("Save embedding to {}".format(args.save_embedding))
 
+print("mp.eps", mp.eps)
 
 ######-------------LOAD THE GRAPH--------------######
 # THE GRAPH MUST BE ALWAYS A TREE
