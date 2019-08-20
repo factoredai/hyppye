@@ -3,21 +3,43 @@ from mpmath import mp
 
 def place_children_codes(dim, n_children, use_sp, sp, Gen_matrices):
 
+    """
+      algorithm to place a set of points on the n-dimensional unit sphere based on coding theory
+      The points are placed as the vertices of a hypercube inscribed
+      into the unit sphere, ie, with coordinates (a_1/sqrt(n),...,a_n/sqrt(n))
+      where n is the dimension and a_1,...,a_n is in {-1,1}.
+
+      It's easy to show that if d = Hamming_distance(a,b), then the Euclidean distance
+      between the two vectors is 2sqrt(d/n). We maximize d by using a code.
+      In this case, our code is the simplex code,(matrices G) with length 2^z-1, and dimension z
+      In this code, the Hamming distance between any pair of vectors is 2^{z-1}.
+      Dimension z means that we have 2^z codewords, so we can place up to 2^z children.
+      one additional challenge is that our dimensions might be too large, e.g.,
+      dim > 2^z-1 for some number of children. Then we generate a codeword and repeat it
+      Note also that the generator matrix for the simplex code is the parity check matrix
+      of the Hamming code, which we precompute for all the z's of interest
+      params:
+      @ dim = dimenison for the embedding (2^dim > n_children)
+      @ n_children = degree of the node
+      @ Gen_matrices = the code to be used ( in the sense of coding theory)
+      @use_sp =
+    """
+
+
     r = int(np.ceil(np.log2(n_children)))
     n = 2**r - 1
 
     G = Gen_matrices[r-1]
 
-    #generate the codewords using the matrix
-    #C = np.zeros((n_children, dim))
+
     C = np.array([mp.mpf(0) for i in range(n_children * dim)]).reshape((n_children, dim))
     for i in range(n_children):
-        #codeword generated from matrix G
+
         cw = np.mod(np.dot(np.expand_dims(digits(i, pad=r), -1).T, G), 2)
 
         rep = int(np.floor(dim/n))
         for j in range(rep):
-            #repeat it as many times as we can
+
             C[[i], j*n:(j+1)*n] = cw
 
 
@@ -25,7 +47,7 @@ def place_children_codes(dim, n_children, use_sp, sp, Gen_matrices):
         if rm > 0:
             C[[i], rep*n:dim] = cw[0, :rm].T
 
-    # inscribe the unit hypercube vertices into unit hypersphere
+
     points = (1/mp.sqrt(dim)*(-1)**C).T
 
     # rotate to match the parent, if we need to
@@ -35,10 +57,15 @@ def place_children_codes(dim, n_children, use_sp, sp, Gen_matrices):
     return points
 
 
-# rotate the set of points so that the first vector
-# coincides with the starting point sp
-# N = dimension, K = # of points
+
 def rotate_points(points, sp, N, K):
+    """
+        rotates the embedded points in order that the satrting point
+        (the grandparent) is the first point embedded.
+        @sp = starting point
+        @ N = dimension
+        @ K = number of points
+    """
     pts = [mp.mpf(0) for i in range(N*K)]
     pts = np.array(pts)
     pts = pts.reshape((N, K))

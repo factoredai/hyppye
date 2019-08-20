@@ -1,14 +1,17 @@
+import scipy.sparse.csgraph as csg
 import argparse
 import networkx as nx
 from mpmath import mp
 import time
 import pandas as pd
-import sys 
+import sys
 
+from distances import *
 from utils import ArgumentParser
 from embedding_parameter import *
 from load_graph import *
 from hyp_embedding_dim import *
+from stats import *
 
 
 parser = ArgumentParser(description='parameters for the embeddings')
@@ -78,8 +81,7 @@ else:
 
 
 ######-------------LOAD THE GRAPH--------------######
-# THE GRAPH MUST BE ALWAYS A TREE
-#TODO: assert that the graph is always a tree
+
 G = load_graph(args.dataset)
 ######-------------LOAD THE GRAPH--------------######
 
@@ -88,11 +90,11 @@ weighted = is_weighted(G)
 
 print("\nGraph information")
 
-# Number of vertices:
+
 n = G.order()
 print("Number of vertices = {}".format(n))
 
-# Number of edges
+
 num_edges = G.number_of_edges()
 print("Number of edges = {}".format(num_edges))
 
@@ -104,7 +106,6 @@ root = 0
 # A few statistics
 n_bfs   = G.order()
 degrees = G.degree()
-
 path_length  = nx.dag_longest_path_length(G)
 print("Max degree = {}, Max path = {}".format(d_max, path_length))
 
@@ -113,20 +114,20 @@ print("Max degree = {}, Max path = {}".format(d_max, path_length))
 start_time = time.time()
 
 if args.auto_tau:
-    mp.dps = 100
+    #naive tau, max posible distance divided by path length
     r = 1 - mp.eps()/2
     m = mp.log((1+r)/(1-r))
     tau = m/(1.3*path_length)
 elif args.eps != None:
     print("Epsilon  = {}".format(args.eps))
     epsilon = args.eps
+    #tau for a given precision
     tau = get_emb_par(G, 1, epsilon, weighted)
 else:
-    # TODO do not allow this tau make an assertion tat ensures the user pick
-    #oneof the options.
-    tau = 1.0
 
-# Print out the scaling factor we got
+    print("if auto-tau (-a) is not a parameter then a precision must be given")
+    sys.exit(1)
+
 print("Scaling factor tau = ", tau)
 
 use_codes = False
@@ -142,91 +143,89 @@ if args.dim != None and args.dim != 2:
     T = hyp_embedding_dim(G, root, weighted, dim, tau, d_max, use_codes, prec)
 else:
     print("Dimension 2 is not available. Please choose a higher dimension")
-    sys.exit(1)    
-    #T = hyp_embedding(G, root, weighted, tau, visualize)
+    sys.exit(1)
+
 end_time = time.time()
 
 
 print("Time spent: {} seconds".format(end_time - start_time))
 
-# Save the embedding:
+
 if args.save_embedding != None:
-    # TODO shoul we store the embedding with a higuer presicion?????    
+
     df = pd.DataFrame(T.astype('float64'))
-    # save tau also:
     df["tau"] = float(tau)
     df.to_csv(args.save_embedding)
-    
-    
 
 
 
 
 
-"""
+
+
 #####------------------Evaluation------------------------####
-# TODO evaluation module
 if args.stats:
-    include(pwd() * "/combinatorial/distances.jl")
     print("\nComputing quality statistics")
-    # The rest is statistics: MAP, distortion
     maps = 0;
     wc = 1;
     d_avg = 0;
 
-    # In case we want to sample the rows of the matrix:
+
     if args.stats_sample != None:
         samples = min(parsed_args.stats_sample, n_bfs)
         print("Using {} sample rows for statistics".format(samples))
     else:
         samples = n_bfs
 
-    sample_nodes = randperm(n_bfs)[1:samples]
+    sample_nodes = np.random.permutation(n_bfs)[:samples]
 
-    _maps   = zeros(samples)
-    _d_avgs = zeros(samples)
-    _wcs    = zeros(samples)
+    _maps   = np.zeros(samples)
+    _d_avgs = np.zeros(samples)
+    _wcs    = np.zeros(samples)
+
+
+    adj_mat_original    =  nx.to_scipy_sparse_matrix(G,list(range(n_bfs-1)))
 
 
 
     for i in range(len(sample_nodes)):
-            # the real distances in the graph
-            true_dist_row = np.array(csg.dijkstra(adj_mat_original, indices=[sample_nodes[i]-1], unweighted=(!weighted), directed=false))
 
-            # the hyperbolic distances for the points we've embedded
-            hyp_dist_row = convert(Array{Float64},vec(dist_matrix_row(T, sample_nodes[i])/tau))
+            true_dist_row = np.array(csg.dijkstra(adj_mat_original, indices=[sample_nodes[i]-1], unweighted=(False), directed=False))
 
-            # this is this row MAP
-            # TODO: n=n_bfs for the way we're currently loading data, but be careful in future
-            curr_map  = dis.map_row(true_dist_row, hyp_dist_row[1:n], n, sample_nodes[i]-1)
+
+            hyp_dist_row = dist_matrix_row(T, sample_nodes[i])/tau
+
+
+            n = n_bfs
+
+            curr_map  = map_row(true_dist_row.T, hyp_dist_row[:n].T, n-1, sample_nodes[i]-1)
             _maps[i]  = curr_map
 
-            # print out current and running average MAP
-            if args.verbose:
-                print("Row {}, current MAP = {}".format(sample_nodes[i],curr_map))
+
+            print("Row {}, current MAP = {}".format(sample_nodes[i],curr_map))
 
 
-            # these are distortions: worst cases (contraction, expansion) and average
-            mc, me, avg, bad = distortion_row(true_dist_row, hyp_dist_row[:n] ,n,sample_nodes[i]-1)
+
+            mc, me, avg, bad = distortion_row(true_dist_row.T, hyp_dist_row[:n].T.astype('float64') ,n-1,sample_nodes[i]-1)
             _wcs[i]  = mc*me
 
             _d_avgs[i] = avg
 
-        # Clean up
-        maps  = sum(_maps)
-        d_avg = sum(_d_avgs)
-        wc    = maximum(_wcs)
 
-        if weighted:
-            print("Note: MAP is not well defined for weighted graphs")
+    maps  = sum(_maps)
+    d_avg = sum(_d_avgs)
+    wc    = max(_wcs)
 
-        # Final stats:
-        print("Final MAP = {}".format(maps/samples))
-        print("Final d_avg = {}, d_wc = {}".format(d_avg/samples,wc))
+    if weighted:
+        print("Note: MAP is not well defined for weighted graphs")
+
+    # Final stats:
+    print("Final MAP = {}".format(maps/samples))
+    print("Final d_avg = {}, d_wc = {}".format(d_avg/samples,wc))
 
 
 
+#TODO main method?
 #if __name__ == "__main__":
     # execute only if run as a script
 #    main()
-"""
