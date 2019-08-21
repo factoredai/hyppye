@@ -1,4 +1,5 @@
 def print_logo():
+    print('\n')
     print('###   ###                     ##########           #########')
     print('###   ###                     ###    ###           ###')
     print('###   ###                     ###    ###           ###')
@@ -9,6 +10,7 @@ def print_logo():
     print('                ### ###                        ###')
     print('                ### ###                        ###')
     print('          ######### ###                  #########')
+    print('\n')
 
 def print_linebreaker():
     print('------------------------------------------------------------')
@@ -19,6 +21,7 @@ def print_slogan():
 def print_developers():
     print('Lacuna AI Fellowship')
     print('Juan Manuel Gutierrez | Santiago Cortes | David Ricardo Valencia')
+    print('\n')
 
 def welcome_screen():
     print_logo()
@@ -26,5 +29,3 @@ def welcome_screen():
     print_slogan()
     print_linebreaker()
     print_developers()
-
-welcome_screen()
