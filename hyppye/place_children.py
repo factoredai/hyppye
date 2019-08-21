@@ -72,6 +72,7 @@ def place_on_sphere(delta, N, K, actually_place, precision=100):
     """
     Iterative procedure to get a set of points nearly uniformly on
     the unit hypersphere.
+
     Input:
         * delta: Float. approximate edge length for N-1 dimensional hypercube
         * N: Integer. Embedding dimension
@@ -103,37 +104,27 @@ def place_on_sphere(delta, N, K, actually_place, precision=100):
 
     while idx < N-1 and points_idx < K:
         if generate_new_delta:
-
             if idx == 0:
                 delt_idx = mp.mpf(delta)
             else:
                 delt_idx = mp.mpf(delta) / mp.mpf( np.prod(mp_sin(curr_angle[0:idx, 0])) )
-
         if (idx < N-2 and curr_angle[idx, 0] + delt_idx > mp.mpf(np.pi)) or (idx == N-2 and curr_angle[idx, 0] + delt_idx > 2*mp.mpf(np.pi)):
-
             if idx == 0:
                 break
             else:
                 generate_new_delta = True
                 idx = idx-1
-                # reset the angle down:
                 curr_angle[idx + 1, 0] = mp.mpf(0)
-
         else:
             curr_angle[idx, 0] = curr_angle[idx, 0] + delt_idx
-
             if idx == N-2:
                 generate_new_delta = False
-
-                # generate point from spherical coordinates
                 if actually_place:
                     point = coord_from_angle(curr_angle, N, precision)
                     points[:, points_idx] = point.flatten()
-
                 points_idx = points_idx+1
             else:
                 idx = idx+1
-
     true_k = points_idx
     return [points, true_k]
 
@@ -145,6 +136,7 @@ def coord_from_angle(ang, N, precision=100):
     Input:
         * ang: angles in spherical coordinates
         * N: Integer. Embedding dimension
+        * precision: Integer. Precision (in bits) to use for the encoding.
 
     Output:
         * point: Array with euclidean coordinates.
