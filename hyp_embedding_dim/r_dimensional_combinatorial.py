@@ -119,8 +119,6 @@ if args.auto_tau:
     #naive tau, max posible distance divided by path length
     r = 1 - mp.eps()/2
     m = mp.log((1+r)/(1-r))
-    print("r", r)
-    print("m", m)
     tau = m/(1.3*path_length)
 elif args.eps != None:
     print("Epsilon  = {}".format(args.eps))
@@ -201,11 +199,10 @@ if args.stats:
             hyp_dist_row = dist_matrix_row(T, sample_nodes[i])/tau
 
 
-            #print (hyp_dist_row)
             hyp_dist_row = hyp_dist_row.astype('double')
             n = n_bfs
 
-            pdb.set_trace()
+
             curr_map  = map_row(np.squeeze(true_dist_row), np.squeeze(hyp_dist_row[:n]), n, sample_nodes[i])
             _maps[i]  = curr_map
 

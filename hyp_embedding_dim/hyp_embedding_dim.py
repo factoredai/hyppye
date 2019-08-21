@@ -5,7 +5,7 @@ import networkx as nx
 from add_children_dim import *
 from place_children import *
 from place_children_codes import *
-
+import pdb
 
 
 def hyp_embedding_dim(G_BFS, root, weighted, dim, tau, d_max, use_codes, precision=100):
@@ -45,6 +45,7 @@ def hyp_embedding_dim(G_BFS, root, weighted, dim, tau, d_max, use_codes, precisi
 
     if not use_codes or d_max > dim:
         SB_points = 1000
+
         SB = place_children(dim, c=SB_points, use_sp=False, sp=0, sample_from=False, sb=0, precision=precision)
 
 
@@ -54,11 +55,14 @@ def hyp_embedding_dim(G_BFS, root, weighted, dim, tau, d_max, use_codes, precisi
     else:
         R = place_children(dim, c=d, use_sp=False, sp=0, sample_from=True, sb=SB, precision=precision)
 
+
     R = R.T
 
     for i in range(d):
         R[i, :] *= edge_lengths[i, 0] #embeddings of the children
         T[root_children[i], :] = R[i, :].copy() #adding these embeddings to the global embedding matrix
+
+
 
     # queue containing the nodes whose children we're placing
     q = []
@@ -71,6 +75,7 @@ def hyp_embedding_dim(G_BFS, root, weighted, dim, tau, d_max, use_codes, precisi
         node_idx += 1
         if node_idx % 100 == 0:
             print("Placing children of node {}".format(node_idx))
+
         children = list(G_BFS.successors(h))
         parent = list(G_BFS.predecessors(h))
         num_children = len(children)
@@ -88,12 +93,14 @@ def hyp_embedding_dim(G_BFS, root, weighted, dim, tau, d_max, use_codes, precisi
 
                 R = add_children_dim(T[parent[0], :], T[h, :], dim, edge_lengths, True, 0, Gen_matrices, precision=precision)
             else:
-
                 R = add_children_dim(T[parent[0], :], T[h, :], dim, edge_lengths, False, SB, 0, precision=precision)
+
+
 
             for i in range(num_children):
 
                 T[children[i], :] = R[i, :]
+
     return T
 
 
