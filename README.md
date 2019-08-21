@@ -6,5 +6,6 @@ Hyperbolic embeddings repository for team 4 - Santiago Cortés, David Ricardo Va
 * cd hyppye
 * pip install --user .
 
-### Usage guide: create 3-dimensional embeddings from music_info.edges and save to embedding_result.txt
+### Usage guide: 
+> create 3-dimensional embeddings from music_info.edges and save to embedding_result.txt
 hyppye --dataset music_info.edges --save_embedding embedding_result.txt --dim 3
