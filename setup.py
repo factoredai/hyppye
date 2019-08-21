@@ -19,6 +19,6 @@ setup(
     ],
     entry_points="""
         [console_scripts]
-        hyppye=hyppye.r_dimensional_combinatorial:main
+        hyppye=hyppye.main:main
     """
 )

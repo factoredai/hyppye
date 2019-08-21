@@ -22,6 +22,8 @@ def print_developers():
     print('Lacuna AI Fellowship')
     print('Juan Manuel Gutierrez | Santiago Cortes | David Ricardo Valencia')
     print('\n')
+    print('For help type "hyppye -h"')
+    print('\n')
 
 def welcome_screen():
     print_logo()
