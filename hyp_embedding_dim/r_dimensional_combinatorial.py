@@ -188,30 +188,31 @@ if args.stats:
     _wcs    = np.zeros(samples)
 
 
-    adj_mat_original    =  nx.to_scipy_sparse_matrix(G,list(range(n_bfs-1)))
+    adj_mat_original    =  nx.to_scipy_sparse_matrix(G,list(range(n_bfs)))
+
 
 
 
     for i in range(len(sample_nodes)):
 
-            true_dist_row = np.array(csg.dijkstra(adj_mat_original, indices=[sample_nodes[i]-1], unweighted=(False), directed=False))
-            
+            true_dist_row = np.array(csg.dijkstra(adj_mat_original, indices=[sample_nodes[i]], unweighted=(False), directed=False))
 
-            hyp_dist_row = (dist_matrix_row(T, sample_nodes[i])/tau).astype('float64')
-            
 
+            hyp_dist_row = dist_matrix_row(T, sample_nodes[i])/tau
+
+
+            #print (hyp_dist_row)
+            hyp_dist_row = hyp_dist_row.astype('double')
             n = n_bfs
 
-            curr_map  = map_row(true_dist_row.T, hyp_dist_row[:n].T, n-1, sample_nodes[i]-1)
+            pdb.set_trace()
+            curr_map  = map_row(np.squeeze(true_dist_row), np.squeeze(hyp_dist_row[:n]), n, sample_nodes[i])
             _maps[i]  = curr_map
 
+            if i % 100 == 0:
+                print("Row {}, current MAP = {}".format(sample_nodes[i],curr_map))
 
-            print("Row {}, current MAP = {}".format(sample_nodes[i],curr_map))
-            if i == 35 or i == 36:
-                print("true_dist_row", true_dist_row)
-                print("hyp_dist_row", hyp_dist_row)
-
-            mc, me, avg, bad = distortion_row(true_dist_row.T, hyp_dist_row[:n].T.astype('float64') ,n-1,sample_nodes[i]-1)
+            mc, me, avg, bad = distortion_row(np.squeeze(true_dist_row), np.squeeze(hyp_dist_row[:n]),n,sample_nodes[i])
             _wcs[i]  = mc*me
 
             _d_avgs[i] = avg
