@@ -1,7 +1,7 @@
 import scipy.sparse.csgraph as csg
 import argparse
 import networkx as nx
-from mpmath import mp
+import mpmath as mp
 import time
 import pandas as pd
 import sys
@@ -13,6 +13,7 @@ from load_graph import *
 from hyp_embedding_dim import *
 from stats import *
 
+np.set_printoptions(threshold=sys.maxsize)
 
 parser = ArgumentParser(description='parameters for the embeddings')
 
@@ -71,7 +72,7 @@ print("Dimensions = {}".format(args.dim))
 
 
 prec = args.precision
-mp.prec =  prec
+mp.mp.prec =  prec
 print("Precision = {}".format(prec))
 
 if not args.save_embedding:
@@ -118,6 +119,8 @@ if args.auto_tau:
     #naive tau, max posible distance divided by path length
     r = 1 - mp.eps()/2
     m = mp.log((1+r)/(1-r))
+    print("r", r)
+    print("m", m)
     tau = m/(1.3*path_length)
 elif args.eps != None:
     print("Epsilon  = {}".format(args.eps))
@@ -178,7 +181,7 @@ if args.stats:
     else:
         samples = n_bfs
 
-    sample_nodes = np.random.permutation(n_bfs)[:samples]
+    sample_nodes = np.arange(samples)#np.random.permutation(n_bfs)[:samples]
 
     _maps   = np.zeros(samples)
     _d_avgs = np.zeros(samples)
@@ -192,10 +195,10 @@ if args.stats:
     for i in range(len(sample_nodes)):
 
             true_dist_row = np.array(csg.dijkstra(adj_mat_original, indices=[sample_nodes[i]-1], unweighted=(False), directed=False))
+            
 
-
-            hyp_dist_row = dist_matrix_row(T, sample_nodes[i])/tau
-
+            hyp_dist_row = (dist_matrix_row(T, sample_nodes[i])/tau).astype('float64')
+            
 
             n = n_bfs
 
@@ -204,8 +207,9 @@ if args.stats:
 
 
             print("Row {}, current MAP = {}".format(sample_nodes[i],curr_map))
-
-
+            if i == 35 or i == 36:
+                print("true_dist_row", true_dist_row)
+                print("hyp_dist_row", hyp_dist_row)
 
             mc, me, avg, bad = distortion_row(true_dist_row.T, hyp_dist_row[:n].T.astype('float64') ,n-1,sample_nodes[i]-1)
             _wcs[i]  = mc*me
