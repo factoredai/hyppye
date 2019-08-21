@@ -2,11 +2,9 @@ import sys
 import numpy as np
 import networkx as nx
 
-from add_children_dim import *
-from place_children import *
-from place_children_codes import *
-
-
+from .add_children_dim import *
+from .place_children import *
+from .place_children_codes import *
 
 def hyp_embedding_dim(G_BFS, root, weighted, dim, tau, d_max, use_codes, precision=100):
     """

@@ -1,6 +1,7 @@
 import numpy as np
 from mpmath import mp
-from place_children_codes import rotate_points
+
+from .place_children_codes import rotate_points
 
 
 def place_children(dim, c, use_sp, sp, sample_from, sb, precision):

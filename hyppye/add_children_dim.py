@@ -1,8 +1,8 @@
 import numpy as np
 from mpmath import mp
 
-from place_children_codes import *
-from place_children import *
+from .place_children_codes import *
+from .place_children import *
 
 #
 def add_children_dim(p, x, dim, edge_lengths, use_codes, SB, Gen_matrices, precision):

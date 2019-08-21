@@ -1,9 +1,7 @@
 import numpy as np
 import mpmath as mp
-from load_graph import max_degree
 
-#######
-
+from .load_graph import max_degree
 
 def get_emb_par(G, k, eps, weighted):
     """
