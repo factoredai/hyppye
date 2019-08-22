@@ -6,12 +6,12 @@ Hyperbolic embeddings repository for team 4 - Santiago Cortés, David Ricardo Va
 * cd hyppye
 * pip install --user .
 
-## Usage guide: 
+## Usage guide:
 **Example: create 3-dimensional embeddings from music_info.edges and save to embedding_result.txt**
 
 ```hyppye --dataset music_info.edges --save_embedding embedding_result.txt --dim 3```
 
-Parameters ```--dataset``` and ```--save_embedding``` are 
+Parameters ```--dataset``` and ```--save_embedding``` are
 always required, if not provided, a help menu wil be shown.
 
 Hyppye API is global executable. For more help on the available options, please run:
@@ -19,7 +19,16 @@ Hyppye API is global executable. For more help on the available options, please 
 ```hyppye --help```
 
 ## Parameters
-* Parameter ```-d``` (```--dim```) allows to choose the dimensions of the embedding. Default value is 3. Embeddings are **not** available for dimensions lower than 3. For an 
+* Parameter ```--dataset``` is a mandatory parameter that will receive the path of the input file. The input file may be an edge list separated by spaces (see ```music_info.edges``` on ```example``` directory). If this is the case, run as follows:
+
+    ```hyppye --dataset example/music_info.edges --save_embedding embedding_result.txt --dim 3```
+
+
+* The other kind of file that ```--dataset``` parameter allows is a csv file separated by tabs containing a graph that will be converted into a tree and then, an edge list and a hash map will be generated as a tab separated file. If this is the case, run as follows:
+
+    ```hyppye --dataset example/music_info.txt --save_embedding embedding_result.txt --dim 3```
+
+* Parameter ```-d``` (```--dim```) allows to choose the dimensions of the embedding. Default value is 3. Embeddings are **not** available for dimensions lower than 3. For an
 embedding with 7 dimensions, use:
 
     ```hyppye --dataset music_info.edges --save_embedding embedding_result.txt --dim 7```
@@ -34,7 +43,7 @@ embedding with 7 dimensions, use:
 
     ```hyppye --dataset music_info.edges --save_embedding embedding_result.txt --dim 3 --precision 128```
 
- 
+
 * Parameter ```-e``` (```--eps```) allows to choose the value of epsilon to compute the corresponding scaling factor in the worst-case distortion case. For more information on the scaling factor and the parameter epsilon, please refer to [Representation Tradeoffs for Hyperbolic Embeddings](https://arxiv.org/pdf/1804.03329.pdf). Default value of epsilon is 0.1. For a different value, for example 0.5, run:
 
     ```hyppye --dataset music_info.edges --save_embedding embedding_result.txt --dim 3 --eps 0.5```
@@ -58,5 +67,4 @@ embedding with 7 dimensions, use:
 
 Using a three dimensional embedding will give the following results.
 
-<img src='./images/emb_3d.png'> 
-
+<img src='./images/emb_3d.png'>
