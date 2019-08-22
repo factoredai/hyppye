@@ -359,11 +359,11 @@ def hyp_embedding_dim(G_BFS, root, weighted, dim, tau, d_max, use_codes, precisi
     Output:
         * Numpy array. Components of the hyperbolic embeddings for each node in the graph.
     """
-    n = G_BFS.order() #returns the number of nodes in the graph
+    n = G_BFS.order()
     mp.prec = precision
     T = np.array([mp.mpf(0) for i in range(n * dim)]).reshape((n, dim))
-    root_children = list(G_BFS.successors(root)) #get children of the root
-    d = len(root_children) #get number of children of root
+    root_children = list(G_BFS.successors(root))
+    d = len(root_children)
     edge_lengths = hyp_to_euc_dist(tau * np.ones((d, 1)))
 
     if weighted:
@@ -402,7 +402,6 @@ def hyp_embedding_dim(G_BFS, root, weighted, dim, tau, d_max, use_codes, precisi
 
     while len(q) > 0:
         h = q.pop(0)
-
         node_idx += 1
         children = list(G_BFS.successors(h))
         parent = list(G_BFS.predecessors(h))
@@ -418,6 +417,7 @@ def hyp_embedding_dim(G_BFS, root, weighted, dim, tau, d_max, use_codes, precisi
                 R = add_children_dim(T[parent[0], :], T[h, :], dim, edge_lengths, True, 0, Gen_matrices, precision=precision)
             else:
                 R = add_children_dim(T[parent[0], :], T[h, :], dim, edge_lengths, False, SB, 0, precision=precision)
+
             for i in range(num_children):
                 T[children[i], :] = R[i, :]
     return T

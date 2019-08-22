@@ -64,11 +64,20 @@ def dist(u,v):
     Output:
         * Float. Hyperbolic distance between u and v.
     """
+    z  = 2 * np.linalg.norm(u - v)**2
 
-    z  = 2*np.linalg.norm(u-v)**2
-    uu = 1 - np.linalg.norm(u)**2
-    vv = 1 - np.linalg.norm(v)**2
-    return mp.cosh(1+z/(uu*vv))
+    if np.linalg.norm(u) > 1:
+        uu = 1 - (1 - mp.eps)**2
+    else:
+        uu = 1 - np.linalg.norm(u)**2
+    if np.linalg.norm(v) > 1:
+        vv = 1 - (1 - mp.eps)**2
+    else:
+        vv = 1 - np.linalg.norm(v)**2
+    x = 1 + z/(uu*vv)
+
+    return mp.log(x + mp.sqrt(x**2 - 1 ))
+
 
 def dist_matrix_row(T,i):
     """

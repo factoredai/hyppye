@@ -22,25 +22,23 @@ class ArgumentParser(argparse.ArgumentParser):
 def setup_parser():
     parser = ArgumentParser(description='parameters for the embeddings')
 
-    parser.add_argument('-i', '--input', metavar='dataset', type=str, required=True,
+    parser.add_argument('-i', '--input', type=str, required=True,
                         help='path to the .csv file with the data')
-    parser.add_argument('-d','--dim', metavar = 'dimension', type=int, default = 3,
+    parser.add_argument('-d','--dim', type=int, default = 3,
                         help= 'dimension of the embeding (>2)')
-    parser.add_argument('-p','--precision', metavar = 'precision', type=int, default = 256,
+    parser.add_argument('-p','--precision', type=int, default = 256,
                         help='precision desired (in bits)')
-    parser.add_argument('-e', '--eps', metavar = 'epsilon distortion', type=float, default = 0.1,
+    parser.add_argument('-e', '--eps', type=float, default = 0.1,
                         help = 'epsilon for worst-case distortion')
-    parser.add_argument('-t','--auto_tau', action='store_true',
-                        help= 'automatically calculate scaling factor')
     parser.add_argument('-c','--use_codes', action='store_true',
                         help= 'use coding-theoretic child placement')
     parser.add_argument('-r', '--results',  action='store_true',
                         help= 'print results and metrics of the embedding')
-    parser.add_argument('-s', '--sample', metavar = 'sample for computing evaluation metrics', type=int,
+    parser.add_argument('-s', '--sample', type=int,
                         help= 'sample size for computing metrics')
-    parser.add_argument('-o', '--output', metavar='name of saved file', type=str, required=True,
+    parser.add_argument('-o', '--output', type=str, required=True,
                         help= 'path for saving the embedding results')
-    parser.add_argument('-v', '--verbose', metavar='verbosity level', type=int, default=0,
+    parser.add_argument('-v', '--verbose', type=int, default=0,
                         help='verbosity level to use, 0 for no verbosity, 1 or more for all verbosity')
     args = parser.parse_args()
     return args
@@ -81,18 +79,15 @@ def main():
         print("Number of edges = {}".format(num_edges))
         print("Max degree = {}, Max path = {}".format(d_max, path_length))
 
-    if args.auto_tau:
-        r = 1 - mp.eps()/2
-        m = mp.log((1+r)/(1-r))
-        tau = m/(1.3*path_length)
-    elif args.eps != None:
+    if args.eps:
         if verbose:
             print("Epsilon  = {}".format(args.eps))
         epsilon = args.eps
         tau = get_emb_par(G, 1, epsilon, weighted)
     else:
-        print("Error: If auto-tau (-t) is not a parameter then a precision must be given")
-        sys.exit(1)
+        r = 1 - mp.eps()/2
+        m = mp.log((1+r)/(1-r))
+        tau = m/(1.3*path_length)
 
     if verbose:
         print("Scaling factor tau = ", tau)
@@ -120,6 +115,7 @@ def main():
     if args.output != None:
         df = pd.DataFrame(T.astype('float64'))
         df["tau"] = float(tau)
+        print("Writing embeddings to disk at path {}".format(args.output))
         df.to_csv(args.output)
 
     if args.results:
@@ -129,45 +125,30 @@ def main():
         d_avg = 0;
 
         if args.sample != None:
-            samples = min(parsed_args.sample, n_bfs)
+            samples = min(args.sample, n_bfs)
             print("Using {} sample rows for statistics".format(samples))
         else:
             samples = n_bfs
 
-        sample_nodes = np.random.permutation(n_bfs)[:samples]
-
+        sample_nodes = np.arange(samples)
         _maps   = np.zeros(samples)
         _d_avgs = np.zeros(samples)
         _wcs    = np.zeros(samples)
-
-
-        adj_mat_original    =  nx.to_scipy_sparse_matrix(G,list(range(n_bfs-1)))
-
-
+        adj_mat_original = nx.to_scipy_sparse_matrix(G,list(range(n_bfs)))
 
         for i in range(len(sample_nodes)):
-
-                true_dist_row = np.array(csg.dijkstra(adj_mat_original, indices=[sample_nodes[i]-1], unweighted=(False), directed=False))
-
-
+                true_dist_row = np.array(csg.dijkstra(adj_mat_original, indices=[sample_nodes[i]], unweighted=(False), directed=False))
                 hyp_dist_row = dist_matrix_row(T, sample_nodes[i])/tau
-
-
+                hyp_dist_row = hyp_dist_row.astype('double')
                 n = n_bfs
-
-                curr_map  = map_row(true_dist_row.T, hyp_dist_row[:n].T, n-1, sample_nodes[i]-1)
+                curr_map  = map_row(np.squeeze(true_dist_row), np.squeeze(hyp_dist_row[:n]), n, sample_nodes[i])
                 _maps[i]  = curr_map
-
-
-                print("Row {}, current MAP = {}".format(sample_nodes[i],curr_map))
-
-
-
-                mc, me, avg, bad = distortion_row(true_dist_row.T, hyp_dist_row[:n].T.astype('float64') ,n-1,sample_nodes[i]-1)
+                if verbose:
+                    if i % 25 == 0:
+                        print("Sample node {}, current MAP = {}".format(sample_nodes[i],curr_map))
+                mc, me, avg, bad = distortion_row(np.squeeze(true_dist_row), np.squeeze(hyp_dist_row[:n]),n,sample_nodes[i])
                 _wcs[i]  = mc*me
-
                 _d_avgs[i] = avg
-
 
         maps  = sum(_maps)
         d_avg = sum(_d_avgs)
@@ -176,13 +157,8 @@ def main():
         if weighted:
             print("Note: MAP is not well defined for weighted graphs")
 
-        # Final stats:
         print("Final MAP = {}".format(maps/samples))
-        print("Final d_avg = {}, d_wc = {}".format(d_avg/samples,wc))
+        print("Average Distortion = {}\nWorst-Case Distortion = {}".format(d_avg/samples,wc))
 
 if __name__ == '__main__':
     main()
-
-"""
-NOTE: IS INTERMEDIATE MAP REALLY NECESSARY OR CAN WE JUST PRINT THE FINAL ONE??
-"""
