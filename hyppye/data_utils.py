@@ -6,7 +6,16 @@ import os
 import gc
 import networkx as nx
 
-def edge_list_build(input_path, output_path, write_to_disk=True):
+
+def file_type(input_path):
+    chunk_read = pd.read_csv(input_path, chunksize=100, sep='\t')
+    col_length = len(chunk_read.get_chunk().columns)
+
+    return col_length
+
+
+
+def edge_list_build(input_path, output_path):
     """
     Function that reads the database and returns the edge list to be fed into
     the embedding code.
@@ -73,22 +82,12 @@ def edge_list_build(input_path, output_path, write_to_disk=True):
 
     graph = nx.DiGraph(nodes_list)
     graph_bfs = nx.bfs_tree(graph, 0)
-
-    tree_edge_list = list(graph_bfs.edges)
-
-    if write_to_disk:
-        f_out = open(os.path.join(output_path, 'edges_list.edges'), 'w')
-        for t in tree_edge_list:
-            line = ' '.join(str(x) for x in t)
-            f_out.write(line + '\n')
-        f_out.close()
-
-        hash_df.to_csv(os.path.join(output_path, 'hash_map.csv'), index=False, sep='\t')
-        end_time = time.time()
-        return
-    else:
-        end_time = time.time()
-        return tree_edge_list, hash_df
+    
+    path = output_path + '.hashmap'
+    hash_df.to_csv(path, index=False, sep='\t')
+    end_time = time.time()
+    print("Time spent creating tree from csv file:", end_time - start_time)
+    return graph_bfs
 
 
 def load_graph(file_name, directed=True):
