@@ -51,7 +51,7 @@ def main():
     verbose = args.verbose > 0
     dataset = args.input
     prec = args.precision
-    mp.prec =  prec
+    mp.prec = prec
     if verbose:
         print('Arguments:')
         for arg in vars(args):
@@ -63,8 +63,19 @@ def main():
         print("Dimensions = {}".format(args.dim))
         print("Precision = {}".format(prec))
         print("Saving embedding to {}".format(args.output))
+    
+    type_of_file = file_type(args.input)
+    
+    if type_of_file == 1:
+        if verbose:
+            print("Received file is an edge list")
+        G = load_graph(args.input)
+    else:
+        if verbose:
+            print("Received file is a graph as a csv")
+        G = edge_list_build(args.input, args.input)
 
-    G = load_graph(args.input)
+    
     weighted = is_weighted(G)
     n = G.order()
     num_edges = G.number_of_edges()
@@ -80,7 +91,7 @@ def main():
         print("Number of edges = {}".format(num_edges))
         print("Max degree = {}, Max path = {}".format(d_max, path_length))
 
-    if args.eps:
+    if args.eps:    
         if verbose:
             print("Epsilon  = {}".format(args.eps))
         epsilon = args.eps
@@ -136,7 +147,8 @@ def main():
         _d_avgs = np.zeros(samples)
         _wcs    = np.zeros(samples)
         adj_mat_original = nx.to_scipy_sparse_matrix(G,list(range(n_bfs)))
-
+        
+        start_time_loop = time.time()
         for i in range(len(sample_nodes)):
                 true_dist_row = np.array(csg.dijkstra(adj_mat_original, indices=[sample_nodes[i]], unweighted=(False), directed=False))
                 hyp_dist_row = dist_matrix_row(T, sample_nodes[i])/tau
@@ -150,6 +162,9 @@ def main():
                 mc, me, avg, bad = distortion_row(np.squeeze(true_dist_row), np.squeeze(hyp_dist_row[:n]),n,sample_nodes[i])
                 _wcs[i]  = mc*me
                 _d_avgs[i] = avg
+                
+        end_time_loop = time.time()
+        print("Loop time", end_time_loop - start_time_loop)
 
         maps  = sum(_maps)
         d_avg = sum(_d_avgs)
