@@ -1,6 +1,5 @@
 import numpy as np
 import mpmath as mp
-import numba
 
 def digits(n, pad):
     """

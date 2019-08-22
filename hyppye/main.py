@@ -45,6 +45,7 @@ def setup_parser():
 
 def main():
     welcome_screen()
+    time.sleep(2)
     start_time = time.time()
     args = setup_parser()
     verbose = args.verbose > 0
@@ -110,7 +111,7 @@ def main():
 
     end_time = time.time()
 
-    print("Time spent: {} seconds".format(end_time - start_time))
+    print("Time spent: {} seconds".format(round(end_time - start_time, 2)))
 
     if args.output != None:
         df = pd.DataFrame(T.astype('float64'))
