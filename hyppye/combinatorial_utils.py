@@ -277,7 +277,11 @@ def place_on_sphere(delta, N, K, actually_place, precision=100):
                 delt_idx = mp.mpf(delta)
             else:
                 delt_idx = mp.mpf(delta) / mp.mpf( np.prod(mp_sin(curr_angle[0:idx, 0])) )
-        if (idx < N-2 and curr_angle[idx, 0] + delt_idx > mp.mpf(np.pi)) or (idx == N-2 and curr_angle[idx, 0] + delt_idx > 2*mp.mpf(np.pi)):
+
+        cond_1 = idx < N-2 and (curr_angle[idx, 0] + delt_idx) > mp.mpf(np.pi)
+        cond_2 = idx == N-2 and (curr_angle[idx, 0] + delt_idx) > 2*mp.mpf(np.pi)
+
+        if cond_1 or cond_2:
             if idx == 0:
                 break
             else:
@@ -313,15 +317,15 @@ def get_emb_par(G, k, eps, weighted):
     Output:
         * Float. The scaling factor tau.
     """
-    n       = G.order()
+    n = G.order()
     degrees = G.degree()
-    d_max   = max([cd[1] for cd in dict(degrees).items()])
+    d_max = max([cd[1] for cd in dict(degrees).items()])
 
     (nu, tau) = (0, 0)
 
-    beta    = mp.pi/(1.2*d_max)
-    v       = -2*k*mp.log(mp.tan(beta/2))
-    m       = len(G.edges())
+    beta = mp.pi/(1.2*d_max)
+    v = -2*k*mp.log(mp.tan(beta/2))
+    m = len(G.edges())
 
     if weighted:
         w = float('Inf')
@@ -333,11 +337,11 @@ def get_emb_par(G, k, eps, weighted):
     else:
         w = 1
 
-    _, d_max     = max_degree(G)
-    alpha        = 2*mp.pi/(d_max)-2*beta
-    _len_        = -2*k*mp.log(mp.tan(alpha/2))
-    nu           = _len_/w if (_len_/w > nu) else nu
-    tau          = ((1+eps)/eps*v)/w if (1+eps)/eps*v > w*nu else nu
+    _, d_max = max_degree(G)
+    alpha = 2*mp.pi/(d_max)-2*beta
+    _len_ = -2*k*mp.log(mp.tan(alpha/2))
+    nu = _len_/w if (_len_/w > nu) else nu
+    tau = ((1+eps)/eps*v)/w if (1+eps)/eps*v > w*nu else nu
 
     return tau
 
@@ -414,9 +418,22 @@ def hyp_embedding_dim(G_BFS, root, weighted, dim, tau, d_max, use_codes, precisi
             edge_lengths = hyp_to_euc_dist(tau * np.ones((num_children, 1)))
             q.extend(children)
             if use_codes and num_children + 1 <= dim:
-                R = add_children_dim(T[parent[0], :], T[h, :], dim, edge_lengths, True, 0, Gen_matrices, precision=precision)
+                R = add_children_dim(T[parent[0], :],
+                                     T[h, :],dim,
+                                     edge_lengths,
+                                     True,
+                                     0,
+                                     Gen_matrices,
+                                     precision=precision)
             else:
-                R = add_children_dim(T[parent[0], :], T[h, :], dim, edge_lengths, False, SB, 0, precision=precision)
+                R = add_children_dim(T[parent[0], :],
+                                     T[h, :],
+                                     dim,
+                                     edge_lengths,
+                                     False,
+                                     SB,
+                                     0,
+                                     precision=precision)
 
             for i in range(num_children):
                 T[children[i], :] = R[i, :]

@@ -55,7 +55,7 @@ def map_row(H1, H2, n, row, verbose=False):
         * row: row for which the map is being computed
 
     Output:
-        * ???
+        * float. return map value of a row i.e a single node
     """
     edge_mask = (H1 == 1.0)
     m = np.sum(edge_mask).astype(int)
