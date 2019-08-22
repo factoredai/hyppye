@@ -28,7 +28,7 @@ def setup_parser():
                         help= 'dimension of the embeding (>2)')
     parser.add_argument('-p','--precision', type=int, default = 256,
                         help='precision desired (in bits)')
-    parser.add_argument('-e', '--eps', type=float, default = 0.1,
+    parser.add_argument('-e', '--eps', type=float, default = None,
                         help = 'epsilon for worst-case distortion')
     parser.add_argument('-c','--use_codes', action='store_true',
                         help= 'use coding-theoretic child placement')
