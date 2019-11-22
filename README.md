@@ -1,5 +1,6 @@
-# Hyppye
-Hyperbolic embeddings repository for team 4 - Santiago Cortés, David Ricardo Valencia and Juan Manuel Gutiérrez
+# Hyppye, a Python Package by Factored
+Hyperbolic embeddings repository - Santiago Cortés, David Ricardo Valencia and Juan Manuel Gutiérrez
+Factored
 
 ## Installation guide
 * git clone git@github.com:lacunafellow/hyperbolicEmbeddings_team4.git hyppye
