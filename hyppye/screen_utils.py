@@ -19,7 +19,7 @@ def print_slogan():
     print('HypPyE: Hyperbolic Embeddings in Python')
 
 def print_developers():
-    print('Owned and Developend by Factored AI')
+    print('Owned and Developed by Factored AI')
     print('\n')
     print('For help type "hyppye -h"')
     print('\n')
