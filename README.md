@@ -2,7 +2,7 @@
 Hyperbolic embeddings repository - Owned and developed by Factored AI
 
 ## Installation guide
-* git clone git@github.com:lacunafellow/hyperbolicEmbeddings_team4.git hyppye
+* git clone git@github.com:lacunafellow/hyppye.git hyppye
 * cd hyppye
 * pip install --user .
 
