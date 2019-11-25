@@ -9,7 +9,7 @@ Hyperbolic embeddings repository - Owned and developed by Factored AI
 ## Usage guide:
 **Example: create 3-dimensional embeddings from music_info.edges and save to embedding_result.txt**
 
-```hyppye --dataset music_info.edges --save_embedding embedding_result.txt --dim 3```
+```hyppye -i music_info.edges -o embedding_result.txt --dim 3```
 
 Parameters ```--dataset``` and ```--save_embedding``` are
 always required, if not provided, a help menu wil be shown.
