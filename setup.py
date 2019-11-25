@@ -6,8 +6,8 @@ setup(
     version='0.1',
     description='Hyperbolic Python Embeddings',
     url='https://github.com/lacunafellow/hyperbolicEmbeddings_team4',
-    author='Juan Manuel Gutierrez, Santiago Cortes, David Ricardo Valencia',
-    author_email='juan.manuel.g@lacunafellow.com, santiago.enrique.c@lacunafellow.com, david.ricardo.v@lacunafellow.com',
+    author='Factored AI',
+    author_email='info@factored.ai',
     packages=find_packages(),
     install_requires=[
         'mpmath>=1.1.0',

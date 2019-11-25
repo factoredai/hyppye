@@ -1,6 +1,5 @@
 # Hyppye, a Python Package by Factored
-Hyperbolic embeddings repository - Santiago Cortés, David Ricardo Valencia and Juan Manuel Gutiérrez
-Factored
+Hyperbolic embeddings repository - Owned and developed by Factored AI
 
 ## Installation guide
 * git clone git@github.com:lacunafellow/hyperbolicEmbeddings_team4.git hyppye
