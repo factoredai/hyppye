@@ -24,7 +24,7 @@ Hyppye API is global executable. For more help on the available options, please 
     ```hyppye --input example/music_info.edges --output embedding_result.txt --dim 3```
 
 
-* The other kind of file that ```--dataset``` parameter allows is a csv file separated by tabs containing a graph that will be converted into a tree and then, an edge list and a hash map will be generated as a tab separated file. If this is the case, run as follows:
+* The other kind of file that ```--input``` parameter allows is a csv file separated by tabs containing a graph that will be converted into a tree and then, an edge list and a hash map will be generated as a tab separated file. If this is the case, run as follows:
 
     ```hyppye --input example/music_info.txt --output embedding_result.txt --dim 3```
 
