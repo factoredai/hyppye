@@ -1,5 +1,5 @@
 # Hyppye, a Python Package by Factored
-Hyperbolic embeddings repository - Owned and developed by Factored AI
+Hyperbolic embeddings repository - Developed and Maintained by Factored AI
 
 ## Installation guide
 * git clone git@github.com:lacunafellow/hyppye.git hyppye
