@@ -2,5 +2,5 @@ mpmath==1.1.0
 networkx==2.3
 numpy==1.16.3
 pandas==0.24.2
-scipy==1.2.1
+scipy==1.10.0
 progress==1.5
